@@ -48,5 +48,10 @@ trait HasSmartQuery
     {
         return [];
     }
+
+    public function getAllowedSorts(): array
+    {
+        return [];
+    }
 }
 

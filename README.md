@@ -13,17 +13,17 @@ composer require claver/smart-query
 ```
 
 After installing the package, you need to register the `SmartQueryServiceProvider` in your `config > app.php`
-##
+
 ```php
-'providers' => [
-    ...,
-    \Claver\SmartQuery\SmartQueryServiceProvider::class,
-    ...
+'providers' => [    
+	...,    
+	\Claver\SmartQuery\SmartQueryServiceProvider::class,    
+	...
 ]
 ```
-##
+
 ```bash
-php artisan vendor:publish --provider="Spatie\\QueryBuilder\\QueryBuilderServiceProvider" --tag="config"
+php artisan vendor:publish --provider="Spatie\\QueryBuilder\\QueryBuilderServicProvider" --tag="config"
 ```
 
 This will publish the `query-builder.php` file to your `config` directory.
@@ -35,26 +35,33 @@ To use Smart-Query, add the `HasSmartQuery` trait to any model you want to enabl
 ```php
 use Claver\SmartQuery\HasSmartQuery;
 
-class User extends Model
-{
-    use HasSmartQuery;
+class User extends Model{    
+	use HasSmartQuery;
 }
 ```
 
 This trait provides a `resolve` method, which you can use to apply smart queries to your model.
 
 ```php
-class UserController extends Controller
-{
-    public function index(Request $request)
-    {
-        $users = (new User())->resolve();
-        return view('users.index', compact('users'));
-    }
+class UserController extends Controller{    
+	public function index(Request $request){        
+		$users = (new User())->resolve();        
+		return response()->json($users);  
+	}
 }
 ```
 
 The `smartQuery` method will apply any filters, sorts, includes, and fields specified in the query string to the model.
+
+To learn more about how to make simple and advanced queries, visit [**Spatie-Query-Builder**](https://spatie.be/docs/laravel-query-builder/v5/features)
+
+You do not have to create your own query builder every single time you need it. Just override these methods.
+
+| Method | Description |
+| --- | --- |
+| getAllowedFilters | Returns an array that includes all the fields that could be filtered  |
+| getAllowedIncludes | Returns an array that includes all the relationships that could be included  |
+| getAllowedSorts | Returns an array that includes all the fields that could be sorted. you don't need to include this method because it's dynamically generated  |
 
 ## Conclusion
 
