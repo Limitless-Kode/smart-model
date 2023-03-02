@@ -3,11 +3,12 @@
     "description": "Making queries much easier in your laravel application",
     "type": "library",
     "keywords": [
-        "spatie",
-        "laravel-query-builder"
+        "claver",
+        "smart-query"
     ],
     "require": {
-        "spatie/laravel-query-builder": "^5.2"
+        "spatie/laravel-query-builder": "^5.2",
+        "claver/smart-query": "dev-master"
     },
     "license": "MIT",
     "minimum-stability": "dev",
