@@ -80,7 +80,9 @@ class ComposerStaticInit3f399696af9e0faad46e08577985f234
         ),
         'C' => 
         array (
+            'Claver\\Traits\\' => 14,
             'Claver\\SmartQuery\\' => 18,
+            'Claver\\Facades\\' => 15,
             'Carbon\\' => 7,
         ),
         'B' => 
@@ -233,9 +235,17 @@ class ComposerStaticInit3f399696af9e0faad46e08577985f234
         array (
             0 => __DIR__ . '/..' . '/doctrine/inflector/lib/Doctrine/Inflector',
         ),
+        'Claver\\Traits\\' => 
+        array (
+            0 => __DIR__ . '/../..' . '/src/Traits',
+        ),
         'Claver\\SmartQuery\\' => 
         array (
             0 => __DIR__ . '/../..' . '/src',
+        ),
+        'Claver\\Facades\\' => 
+        array (
+            0 => __DIR__ . '/../..' . '/src/Facades',
         ),
         'Carbon\\' => 
         array (

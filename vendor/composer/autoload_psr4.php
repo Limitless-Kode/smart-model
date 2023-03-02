@@ -41,7 +41,9 @@ return array(
     'GuzzleHttp\\UriTemplate\\' => array($vendorDir . '/guzzlehttp/uri-template/src'),
     'Fruitcake\\Cors\\' => array($vendorDir . '/fruitcake/php-cors/src'),
     'Doctrine\\Inflector\\' => array($vendorDir . '/doctrine/inflector/lib/Doctrine/Inflector'),
+    'Claver\\Traits\\' => array($baseDir . '/src/Traits'),
     'Claver\\SmartQuery\\' => array($baseDir . '/src'),
+    'Claver\\Facades\\' => array($baseDir . '/src/Facades'),
     'Carbon\\' => array($vendorDir . '/nesbot/carbon/src/Carbon'),
     'Brick\\Math\\' => array($vendorDir . '/brick/math/src'),
 );
