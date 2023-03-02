@@ -8,7 +8,6 @@
     ],
     "require": {
         "spatie/laravel-query-builder": "^5.2",
-        "claver/smart-query": "dev-master"
     },
     "license": "MIT",
     "minimum-stability": "dev",
