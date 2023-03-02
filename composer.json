@@ -1,0 +1,21 @@
+{
+    "name": "limitless/smart-query",
+    "description": "Making queries much easier in your laravel application",
+    "type": "project",
+    "require": {
+        "spatie/laravel-query-builder": "^5.2"
+    },
+    "license": "MIT",
+    "minimum-stability": "dev",
+    "autoload": {
+        "psr-4": {
+            "Limitless\\SmartQuery\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Peter Claver Amobila",
+            "email": "57482239+Limitless-Kode@users.noreply.github.com"
+        }
+    ]
+}
