@@ -7,7 +7,7 @@
         "smart-query"
     ],
     "require": {
-        "spatie/laravel-query-builder": "^5.2",
+        "spatie/laravel-query-builder": "^5.2"
     },
     "license": "MIT",
     "minimum-stability": "dev",
