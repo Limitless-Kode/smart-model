@@ -6,7 +6,7 @@
         "claver",
         "smart-query"
     ],
-    "version": "0.0.1",
+    "version": "0.0.2",
     "require": {
         "php": "^8.0",
         "spatie/laravel-query-builder": "^5.2"

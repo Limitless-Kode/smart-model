@@ -4,7 +4,7 @@ namespace Claver\SmartQuery;
 
 use Illuminate\Foundation\AliasLoader;
 
-class SmartModelServiceProvider extends \Illuminate\Support\ServiceProvider
+class SmartQueryServiceProvider extends \Illuminate\Support\ServiceProvider
 {
     public function boot()
     {
