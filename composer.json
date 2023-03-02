@@ -1,7 +1,7 @@
 {
     "name": "claver/smart-query",
     "description": "Making queries much easier in your laravel application",
-    "type": "laravel-package",
+    "type": "library",
     "keywords": [
         "spatie",
         "laravel-query-builder"
