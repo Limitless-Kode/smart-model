@@ -2,11 +2,16 @@
     "name": "claver/smart-query",
     "description": "Making queries much easier in your laravel application",
     "type": "laravel-package",
+    "keywords": [
+        "spatie",
+        "laravel-query-builder"
+    ],
     "require": {
         "spatie/laravel-query-builder": "^5.2"
     },
     "license": "MIT",
     "minimum-stability": "dev",
+    "prefer-stable" : true,
     "autoload": {
         "psr-4": {
             "Claver\\SmartQuery\\": "src/"
