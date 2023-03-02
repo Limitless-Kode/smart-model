@@ -33,6 +33,8 @@ This will publish the `query-builder.php` file to your `config` directory.
 To use Smart-Query, add the `HasSmartQuery` trait to any model you want to enable smart queries on.
 
 ```php
+use Claver\SmartQuery\HasSmartQuery;
+
 class User extends Model
 {
     use HasSmartQuery;
@@ -42,8 +44,6 @@ class User extends Model
 This trait provides a `scopeSmartQuery` method, which you can use to apply smart queries to your model.
 
 ```php
-use Claver\SmartQuery\HasSmartQuery;
-
 class UserController extends Controller
 {
     public function index(Request $request)
