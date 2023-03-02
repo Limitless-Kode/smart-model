@@ -1,9 +1,17 @@
 CHANGELOG
 =========
 
+6.3
+---
+
+ * Add `ParameterBag::getEnum()`
+ * Create migration for session table when pdo handler is used
+ * Add support for Relay PHP extension for Redis
+
 6.2
 ---
 
+ * Add `StreamedJsonResponse` class for efficient JSON streaming
  * The HTTP cache store uses the `xxh128` algorithm
  * Deprecate calling `JsonResponse::setCallback()`, `Response::setExpires/setLastModified/setEtag()`, `MockArraySessionStorage/NativeSessionStorage::setMetadataBag()`, `NativeSessionStorage::setSaveHandler()` without arguments
  * Add request matchers under the `Symfony\Component\HttpFoundation\RequestMatcher` namespace

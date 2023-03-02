@@ -1,6 +1,6 @@
 <?php
 
-namespace Limitless\SmartQuery;
+namespace Claver\SmartQuery;
 
 class SmartModelServiceProvider extends \Illuminate\Support\ServiceProvider
 {

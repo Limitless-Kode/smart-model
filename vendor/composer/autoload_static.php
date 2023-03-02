@@ -8,11 +8,12 @@ class ComposerStaticInit3f399696af9e0faad46e08577985f234
 {
     public static $files = array (
         '0e6d7bf4a5811bfa5cf40c5ccd6fae6a' => __DIR__ . '/..' . '/symfony/polyfill-mbstring/bootstrap.php',
-        '60799491728b879e74601d83e38b2cad' => __DIR__ . '/..' . '/illuminate/collections/helpers.php',
         'a4a119a56e50fbb293281d9a48007e0e' => __DIR__ . '/..' . '/symfony/polyfill-php80/bootstrap.php',
+        '60799491728b879e74601d83e38b2cad' => __DIR__ . '/..' . '/illuminate/collections/helpers.php',
         '6e3fae29631ef280660b3cdad06f25a8' => __DIR__ . '/..' . '/symfony/deprecation-contracts/function.php',
         'a1105708a18b76903365ca1c4aa61b02' => __DIR__ . '/..' . '/symfony/translation/Resources/functions.php',
         '72579e7bd17821bb1321b87411366eae' => __DIR__ . '/..' . '/illuminate/support/helpers.php',
+        '662a729f963d39afe703c9d9b7ab4a8c' => __DIR__ . '/..' . '/symfony/polyfill-php83/bootstrap.php',
         'e69f7f6ee287b969198c3c9d6777bd38' => __DIR__ . '/..' . '/symfony/polyfill-intl-normalizer/bootstrap.php',
         '25072dd6e2470089de65ae7bf11d3109' => __DIR__ . '/..' . '/symfony/polyfill-php72/bootstrap.php',
         '667aeda72477189d0494fecd327c3641' => __DIR__ . '/..' . '/symfony/var-dumper/Resources/functions/dump.php',
@@ -27,6 +28,7 @@ class ComposerStaticInit3f399696af9e0faad46e08577985f234
         ),
         'S' => 
         array (
+            'Symfony\\Polyfill\\Php83\\' => 23,
             'Symfony\\Polyfill\\Php80\\' => 23,
             'Symfony\\Polyfill\\Php72\\' => 23,
             'Symfony\\Polyfill\\Mbstring\\' => 26,
@@ -54,10 +56,6 @@ class ComposerStaticInit3f399696af9e0faad46e08577985f234
             'Psr\\EventDispatcher\\' => 20,
             'Psr\\Container\\' => 14,
         ),
-        'L' => 
-        array (
-            'Limitless\\SmartQuery\\' => 21,
-        ),
         'I' => 
         array (
             'Illuminate\\Support\\' => 19,
@@ -82,6 +80,7 @@ class ComposerStaticInit3f399696af9e0faad46e08577985f234
         ),
         'C' => 
         array (
+            'Claver\\SmartQuery\\' => 18,
             'Carbon\\' => 7,
         ),
         'B' => 
@@ -94,6 +93,10 @@ class ComposerStaticInit3f399696af9e0faad46e08577985f234
         'voku\\' => 
         array (
             0 => __DIR__ . '/..' . '/voku/portable-ascii/src/voku',
+        ),
+        'Symfony\\Polyfill\\Php83\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/symfony/polyfill-php83',
         ),
         'Symfony\\Polyfill\\Php80\\' => 
         array (
@@ -187,15 +190,11 @@ class ComposerStaticInit3f399696af9e0faad46e08577985f234
         array (
             0 => __DIR__ . '/..' . '/psr/container/src',
         ),
-        'Limitless\\SmartQuery\\' => 
-        array (
-            0 => __DIR__ . '/../..' . '/src',
-        ),
         'Illuminate\\Support\\' => 
         array (
-            0 => __DIR__ . '/..' . '/illuminate/conditionable',
-            1 => __DIR__ . '/..' . '/illuminate/macroable',
-            2 => __DIR__ . '/..' . '/illuminate/collections',
+            0 => __DIR__ . '/..' . '/illuminate/collections',
+            1 => __DIR__ . '/..' . '/illuminate/conditionable',
+            2 => __DIR__ . '/..' . '/illuminate/macroable',
             3 => __DIR__ . '/..' . '/illuminate/support',
         ),
         'Illuminate\\Session\\' => 
@@ -233,6 +232,10 @@ class ComposerStaticInit3f399696af9e0faad46e08577985f234
         'Doctrine\\Inflector\\' => 
         array (
             0 => __DIR__ . '/..' . '/doctrine/inflector/lib/Doctrine/Inflector',
+        ),
+        'Claver\\SmartQuery\\' => 
+        array (
+            0 => __DIR__ . '/../..' . '/src',
         ),
         'Carbon\\' => 
         array (
