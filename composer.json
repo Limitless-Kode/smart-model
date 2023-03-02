@@ -1,5 +1,5 @@
 {
-    "name": "limitless/smart-query",
+    "name": "claver/smart-query",
     "description": "Making queries much easier in your laravel application",
     "type": "project",
     "require": {
