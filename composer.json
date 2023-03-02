@@ -9,7 +9,7 @@
     "minimum-stability": "dev",
     "autoload": {
         "psr-4": {
-            "Limitless\\SmartQuery\\": "src/"
+            "Claver\\SmartQuery\\": "src/"
         }
     },
     "authors": [

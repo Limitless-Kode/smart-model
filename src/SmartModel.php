@@ -1,6 +1,6 @@
 <?php
 
-namespace Limitless\SmartQuery;
+namespace Claver\SmartQuery;
 
 use Illuminate\Database\Eloquent\Model;
 use Spatie\QueryBuilder\QueryBuilder;
