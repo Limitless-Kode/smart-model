@@ -41,7 +41,7 @@ class User extends Model
 }
 ```
 
-This trait provides a `scopeSmartQuery` method, which you can use to apply smart queries to your model.
+This trait provides a `resolve` method, which you can use to apply smart queries to your model.
 
 ```php
 class UserController extends Controller
