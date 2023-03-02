@@ -9,7 +9,7 @@ Smart-Query is a Laravel package that utilizes spatie-query-builder to enable sm
 To install Smart-Query, you need to have a Laravel application set up. Then, you can install the package via composer by running the command:
 
 ```bash
-composer require claver/smart-query:@dev
+composer require claver/smart-query
 ```
 
 After installing the package, you need to register the `SmartQueryServiceProvider` in your `config > app.php`
