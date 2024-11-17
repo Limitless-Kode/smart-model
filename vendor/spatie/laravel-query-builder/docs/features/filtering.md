@@ -5,7 +5,7 @@ weight: 1
 
 The `filter` query parameters can be used to add `where` clauses to your Eloquent query. Out of the box we support filtering results by partial attribute value, exact attribute value or even if an attribute value exists in a given array of values. For anything more advanced, custom filters can be used.
 
-By default, all filters have to be explicitly allowed using `allowedFilters()`. This method takes an array of strings or `AllowedFilter` instances. An allowed filter can be partial, beginsWithStrict, exact, scope or custom. By default, any string values passed to `allowedFilters()` will automatically be converted to `AllowedFilter::partial()` filters.
+By default, all filters have to be explicitly allowed using `allowedFilters()`. This method takes an array of strings or `AllowedFilter` instances. An allowed filter can be partial, beginsWithStrict, endsWithStrict, exact, scope or custom. By default, any string values passed to `allowedFilters()` will automatically be converted to `AllowedFilter::partial()` filters.
 
 ## Basic usage
 
@@ -48,9 +48,9 @@ You can set in configuration file to not throw an InvalidFilterQuery exception w
 
 By default the option is set false.
 
-## Partial and beginsWithStrict filters
+## Partial, beginsWithStrict and endsWithStrict filters
 
-By default, all values passed to `allowedFilters` are converted to partial filters. The underlying query will be modified to use a `LIKE LOWER(%value%)` statement. Because this can cause missed indexes, it's often worth considering a `beginsWithStrict` filter instead. This filter will use a `LIKE value%` statement instead.
+By default, all values passed to `allowedFilters` are converted to partial filters. The underlying query will be modified to use a `LIKE LOWER(%value%)` statement. Because this can cause missed indexes, it's often worth considering a `beginsWithStrict` filter for the beginning of the value, or an `endsWithStrict` filter for the end of the value. These filters will use a `LIKE value%` statement and a `LIKE %value` statement respectively, instead of the default partial filter. This can help optimize query performance and index utilization.
 
 ## Exact filters
 
@@ -84,6 +84,40 @@ $users = QueryBuilder::for(User::class)
     ->get();
 
 // $users will contain all admin users with id 1, 2, 3, 4 or 5
+```
+
+## Operator filters
+
+Operator filters allow you to filter results based on different operators such as EQUAL, NOT_EQUAL, GREATER_THAN, LESS_THAN, GREATER_THAN_OR_EQUAL, LESS_THAN_OR_EQUAL, and DYNAMIC. You can use the `AllowedFilter::operator` method to create operator filters.
+
+```php
+use Spatie\QueryBuilder\AllowedFilter;
+use Spatie\QueryBuilder\Enums\FilterOperator;
+
+// GET /users?filter[salary]=>3000
+$users = QueryBuilder::for(User::class)
+    ->allowedFilters([
+        AllowedFilter::operator('salary', FilterOperator::GREATER_THAN),
+    ])
+    ->get();
+
+// $users will contain all users with a salary greater than 3000
+```
+
+You can also use dynamic operator filters, which allow you to specify the operator in the filter value:
+
+```php
+use Spatie\QueryBuilder\AllowedFilter;
+use Spatie\QueryBuilder\Enums\FilterOperator;
+
+// GET /users?filter[salary]=>3000
+$users = QueryBuilder::for(User::class)
+    ->allowedFilters([
+        AllowedFilter::operator('salary', FilterOperator::DYNAMIC),
+    ])
+    ->get();
+
+// $users will contain all users with a salary greater than 3000
 ```
 
 ## Exact or partial filters for related properties
@@ -146,6 +180,12 @@ public function scopeEvent(Builder $query, \App\Models\Event $event): Builder
 }
 
 // GET /events?filter[event]=1 - the event with ID 1 will automatically be resolved and passed to the scoped filter
+```
+
+If you use any other column aside `id` column for route model binding (ULID,UUID). Remeber to specify the value of the column used in route model binding
+
+```php
+// GET /events?filter[event]=01j0rcpkx5517v0aqyez5vnwn - supposing we use a ULID column for route model binding.
 ```
 
 Scopes are usually not named with query filters in mind. Use [filter aliases](#filter-aliases) to alias them to something more appropriate:
@@ -300,6 +340,23 @@ QueryBuilder::for(User::class)
     ->allowedFilters([
         AllowedFilter::exact('name')->default('Joe'),
         AllowedFilter::scope('deleted')->default(false),
+        AllowedFilter::scope('permission')->default(null),
     ])
     ->get();
 ```
+
+## Nullable Filter
+
+You can mark a filter nullable if you want to retrieve entries whose filtered value is null. This way you can apply the filter with an empty value, as shown in the example.
+
+```php
+// GET /user?filter[name]=&filter[permission]=
+
+QueryBuilder::for(User::class)
+    ->allowedFilters([
+        AllowedFilter::exact('name')->nullable(),
+        AllowedFilter::scope('permission')->nullable(),
+    ])
+    ->get();
+```
+

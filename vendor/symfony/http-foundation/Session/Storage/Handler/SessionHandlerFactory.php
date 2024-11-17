@@ -11,7 +11,10 @@
 
 namespace Symfony\Component\HttpFoundation\Session\Storage\Handler;
 
+use Doctrine\DBAL\Configuration;
 use Doctrine\DBAL\DriverManager;
+use Doctrine\DBAL\Schema\DefaultSchemaManagerFactory;
+use Doctrine\DBAL\Tools\DsnParser;
 use Relay\Relay;
 use Symfony\Component\Cache\Adapter\AbstractAdapter;
 
@@ -67,7 +70,12 @@ class SessionHandlerFactory
                 if (!class_exists(DriverManager::class)) {
                     throw new \InvalidArgumentException('Unsupported PDO OCI DSN. Try running "composer require doctrine/dbal".');
                 }
-                $connection = DriverManager::getConnection(['url' => $connection])->getWrappedConnection();
+                $connection[3] = '-';
+                $params = (new DsnParser())->parse($connection);
+                $config = new Configuration();
+                $config->setSchemaManagerFactory(new DefaultSchemaManagerFactory());
+
+                $connection = DriverManager::getConnection($params, $config)->getNativeConnection();
                 // no break;
 
             case str_starts_with($connection, 'mssql://'):

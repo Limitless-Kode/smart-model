@@ -6,14 +6,15 @@ use ArrayAccess;
 use Closure;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Traits\Conditionable;
+use Illuminate\Support\Traits\Dumpable;
 use Illuminate\Support\Traits\Macroable;
 use Illuminate\Support\Traits\Tappable;
 use JsonSerializable;
-use Symfony\Component\VarDumper\VarDumper;
+use Stringable as BaseStringable;
 
-class Stringable implements JsonSerializable, ArrayAccess
+class Stringable implements JsonSerializable, ArrayAccess, BaseStringable
 {
-    use Conditionable, Macroable, Tappable;
+    use Conditionable, Dumpable, Macroable, Tappable;
 
     /**
      * The underlying string value.
@@ -97,6 +98,39 @@ class Stringable implements JsonSerializable, ArrayAccess
     public function basename($suffix = '')
     {
         return new static(basename($this->value, $suffix));
+    }
+
+    /**
+     * Get the character at the specified index.
+     *
+     * @param  int  $index
+     * @return string|false
+     */
+    public function charAt($index)
+    {
+        return Str::charAt($this->value, $index);
+    }
+
+    /**
+     * Remove the given string if it exists at the start of the current string.
+     *
+     * @param  string|array  $needle
+     * @return static
+     */
+    public function chopStart($needle)
+    {
+        return new static(Str::chopStart($this->value, $needle));
+    }
+
+    /**
+     * Remove the given string if it exists at the end of the current string.
+     *
+     * @param  string|array  $needle
+     * @return static
+     */
+    public function chopEnd($needle)
+    {
+        return new static(Str::chopEnd($this->value, $needle));
     }
 
     /**
@@ -190,6 +224,29 @@ class Stringable implements JsonSerializable, ArrayAccess
     }
 
     /**
+     * Convert the case of a string.
+     *
+     * @param  int  $mode
+     * @param  string|null  $encoding
+     * @return static
+     */
+    public function convertCase(int $mode = MB_CASE_FOLD, ?string $encoding = 'UTF-8')
+    {
+        return new static(Str::convertCase($this->value, $mode, $encoding));
+    }
+
+    /**
+     * Replace consecutive instances of a given character with a single character.
+     *
+     * @param  string  $character
+     * @return static
+     */
+    public function deduplicate(string $character = ' ')
+    {
+        return new static(Str::deduplicate($this->value, $character));
+    }
+
+    /**
      * Get the parent directory's path.
      *
      * @param  int  $levels
@@ -239,11 +296,11 @@ class Stringable implements JsonSerializable, ArrayAccess
     }
 
     /**
-     * Explode the string into an array.
+     * Explode the string into a collection.
      *
      * @param  string  $delimiter
      * @param  int  $limit
-     * @return \Illuminate\Support\Collection
+     * @return \Illuminate\Support\Collection<int, string>
      */
     public function explode($delimiter, $limit = PHP_INT_MAX)
     {
@@ -256,7 +313,7 @@ class Stringable implements JsonSerializable, ArrayAccess
      * @param  string|int  $pattern
      * @param  int  $limit
      * @param  int  $flags
-     * @return \Illuminate\Support\Collection
+     * @return \Illuminate\Support\Collection<int, string>
      */
     public function split($pattern, $limit = -1, $flags = 0)
     {
@@ -309,6 +366,16 @@ class Stringable implements JsonSerializable, ArrayAccess
     public function isJson()
     {
         return Str::isJson($this->value);
+    }
+
+    /**
+     * Determine if a given value is a valid URL.
+     *
+     * @return bool
+     */
+    public function isUrl()
+    {
+        return Str::isUrl($this->value);
     }
 
     /**
@@ -377,11 +444,12 @@ class Stringable implements JsonSerializable, ArrayAccess
      *
      * @param  int  $limit
      * @param  string  $end
+     * @param  bool  $preserveWords
      * @return static
      */
-    public function limit($limit = 100, $end = '...')
+    public function limit($limit = 100, $end = '...', $preserveWords = false)
     {
-        return new static(Str::limit($this->value, $limit, $end));
+        return new static(Str::limit($this->value, $limit, $end, $preserveWords));
     }
 
     /**
@@ -398,22 +466,24 @@ class Stringable implements JsonSerializable, ArrayAccess
      * Convert GitHub flavored Markdown into HTML.
      *
      * @param  array  $options
+     * @param  array  $extensions
      * @return static
      */
-    public function markdown(array $options = [])
+    public function markdown(array $options = [], array $extensions = [])
     {
-        return new static(Str::markdown($this->value, $options));
+        return new static(Str::markdown($this->value, $options, $extensions));
     }
 
     /**
      * Convert inline Markdown into HTML.
      *
      * @param  array  $options
+     * @param  array  $extensions
      * @return static
      */
-    public function inlineMarkdown(array $options = [])
+    public function inlineMarkdown(array $options = [], array $extensions = [])
     {
-        return new static(Str::inlineMarkdown($this->value, $options));
+        return new static(Str::inlineMarkdown($this->value, $options, $extensions));
     }
 
     /**
@@ -471,7 +541,17 @@ class Stringable implements JsonSerializable, ArrayAccess
      */
     public function test($pattern)
     {
-        return $this->match($pattern)->isNotEmpty();
+        return $this->isMatch($pattern);
+    }
+
+    /**
+     * Remove all non-numeric characters from a string.
+     *
+     * @return static
+     */
+    public function numbers()
+    {
+        return new static(Str::numbers($this->value));
     }
 
     /**
@@ -555,6 +635,19 @@ class Stringable implements JsonSerializable, ArrayAccess
     }
 
     /**
+     * Find the multi-byte safe position of the first occurrence of the given substring.
+     *
+     * @param  string  $needle
+     * @param  int  $offset
+     * @param  string|null  $encoding
+     * @return int|false
+     */
+    public function position($needle, $offset = 0, $encoding = null)
+    {
+        return Str::position($this->value, $needle, $offset, $encoding);
+    }
+
+    /**
      * Prepend the given values to the string.
      *
      * @param  string  ...$values
@@ -603,11 +696,12 @@ class Stringable implements JsonSerializable, ArrayAccess
      *
      * @param  string|iterable<string>  $search
      * @param  string|iterable<string>  $replace
+     * @param  bool  $caseSensitive
      * @return static
      */
-    public function replace($search, $replace)
+    public function replace($search, $replace, $caseSensitive = true)
     {
-        return new static(Str::replace($search, $replace, $this->value));
+        return new static(Str::replace($search, $replace, $this->value, $caseSensitive));
     }
 
     /**
@@ -635,6 +729,18 @@ class Stringable implements JsonSerializable, ArrayAccess
     }
 
     /**
+     * Replace the first occurrence of the given value if it appears at the start of the string.
+     *
+     * @param  string  $search
+     * @param  string  $replace
+     * @return static
+     */
+    public function replaceStart($search, $replace)
+    {
+        return new static(Str::replaceStart($search, $replace, $this->value));
+    }
+
+    /**
      * Replace the last occurrence of a given value in the string.
      *
      * @param  string  $search
@@ -647,10 +753,22 @@ class Stringable implements JsonSerializable, ArrayAccess
     }
 
     /**
+     * Replace the last occurrence of a given value if it appears at the end of the string.
+     *
+     * @param  string  $search
+     * @param  string  $replace
+     * @return static
+     */
+    public function replaceEnd($search, $replace)
+    {
+        return new static(Str::replaceEnd($search, $replace, $this->value));
+    }
+
+    /**
      * Replace the patterns matching the given regular expression.
      *
-     * @param  string  $pattern
-     * @param  \Closure|string  $replace
+     * @param  array|string  $pattern
+     * @param  \Closure|string[]|string  $replace
      * @param  int  $limit
      * @return static
      */
@@ -698,7 +816,7 @@ class Stringable implements JsonSerializable, ArrayAccess
     /**
      * Strip HTML and PHP tags from the given string.
      *
-     * @param  string  $allowedTags
+     * @param  string[]|string|null  $allowedTags
      * @return static
      */
     public function stripTags($allowedTags = null)
@@ -717,7 +835,7 @@ class Stringable implements JsonSerializable, ArrayAccess
     }
 
     /**
-     * Convert the given string to title case.
+     * Convert the given string to proper case.
      *
      * @return static
      */
@@ -727,13 +845,35 @@ class Stringable implements JsonSerializable, ArrayAccess
     }
 
     /**
-     * Convert the given string to title case for each word.
+     * Convert the given string to proper case for each word.
      *
      * @return static
      */
     public function headline()
     {
         return new static(Str::headline($this->value));
+    }
+
+    /**
+     * Convert the given string to APA-style title case.
+     *
+     * @return static
+     */
+    public function apa()
+    {
+        return new static(Str::apa($this->value));
+    }
+
+    /**
+     * Transliterate a string to its closest ASCII representation.
+     *
+     * @param  string|null  $unknown
+     * @param  bool|null  $strict
+     * @return static
+     */
+    public function transliterate($unknown = '?', $strict = false)
+    {
+        return new static(Str::transliterate($this->value, $unknown, $strict));
     }
 
     /**
@@ -842,6 +982,21 @@ class Stringable implements JsonSerializable, ArrayAccess
     }
 
     /**
+     * Take the first or last {$limit} characters.
+     *
+     * @param  int  $limit
+     * @return static
+     */
+    public function take(int $limit)
+    {
+        if ($limit < 0) {
+            return $this->substr($limit);
+        }
+
+        return $this->substr(0, $limit);
+    }
+
+    /**
      * Trim the string of the given characters.
      *
      * @param  string  $characters
@@ -849,7 +1004,7 @@ class Stringable implements JsonSerializable, ArrayAccess
      */
     public function trim($characters = null)
     {
-        return new static(trim(...array_merge([$this->value], func_get_args())));
+        return new static(Str::trim(...array_merge([$this->value], func_get_args())));
     }
 
     /**
@@ -860,7 +1015,7 @@ class Stringable implements JsonSerializable, ArrayAccess
      */
     public function ltrim($characters = null)
     {
-        return new static(ltrim(...array_merge([$this->value], func_get_args())));
+        return new static(Str::ltrim(...array_merge([$this->value], func_get_args())));
     }
 
     /**
@@ -871,7 +1026,7 @@ class Stringable implements JsonSerializable, ArrayAccess
      */
     public function rtrim($characters = null)
     {
-        return new static(rtrim(...array_merge([$this->value], func_get_args())));
+        return new static(Str::rtrim(...array_merge([$this->value], func_get_args())));
     }
 
     /**
@@ -897,7 +1052,7 @@ class Stringable implements JsonSerializable, ArrayAccess
     /**
      * Split a string by uppercase characters.
      *
-     * @return \Illuminate\Support\Collection
+     * @return \Illuminate\Support\Collection<int, string>
      */
     public function ucsplit()
     {
@@ -1092,6 +1247,19 @@ class Stringable implements JsonSerializable, ArrayAccess
     }
 
     /**
+     * Wrap a string to a given number of characters.
+     *
+     * @param  int  $characters
+     * @param  string  $break
+     * @param  bool  $cutLongWords
+     * @return static
+     */
+    public function wordWrap($characters = 75, $break = "\n", $cutLongWords = false)
+    {
+        return new static(Str::wordWrap($this->value, $characters, $break, $cutLongWords));
+    }
+
+    /**
      * Wrap the string with the given strings.
      *
      * @param  string  $before
@@ -1101,6 +1269,18 @@ class Stringable implements JsonSerializable, ArrayAccess
     public function wrap($before, $after = null)
     {
         return new static(Str::wrap($this->value, $before, $after));
+    }
+
+    /**
+     * Unwrap the string with the given strings.
+     *
+     * @param  string  $before
+     * @param  string|null  $after
+     * @return static
+     */
+    public function unwrap($before, $after = null)
+    {
+        return new static(Str::unwrap($this->value, $before, $after));
     }
 
     /**
@@ -1114,27 +1294,37 @@ class Stringable implements JsonSerializable, ArrayAccess
     }
 
     /**
-     * Dump the string.
+     * Convert the string to Base64 encoding.
      *
-     * @return $this
+     * @return static
      */
-    public function dump()
+    public function toBase64()
     {
-        VarDumper::dump($this->value);
-
-        return $this;
+        return new static(base64_encode($this->value));
     }
 
     /**
-     * Dump the string and end the script.
+     * Decode the Base64 encoded string.
      *
-     * @return never
+     * @param  bool  $strict
+     * @return static
      */
-    public function dd()
+    public function fromBase64($strict = false)
     {
-        $this->dump();
+        return new static(base64_decode($this->value, $strict));
+    }
 
-        exit(1);
+    /**
+     * Dump the string.
+     *
+     * @param  mixed  ...$args
+     * @return $this
+     */
+    public function dump(...$args)
+    {
+        dump($this->value, ...$args);
+
+        return $this;
     }
 
     /**
@@ -1160,11 +1350,12 @@ class Stringable implements JsonSerializable, ArrayAccess
     /**
      * Get the underlying string value as an integer.
      *
+     * @param  int  $base
      * @return int
      */
-    public function toInteger()
+    public function toInteger($base = 10)
     {
-        return intval($this->value);
+        return intval($this->value, $base);
     }
 
     /**

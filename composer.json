@@ -9,7 +9,7 @@
     "version": "0.0.2",
     "require": {
         "php": "^8.0",
-        "spatie/laravel-query-builder": "^5.2"
+        "spatie/laravel-query-builder": "^6.2"
     },
     "license": "MIT",
     "minimum-stability": "dev",
@@ -17,7 +17,6 @@
     "autoload": {
         "psr-4": {
             "Claver\\SmartQuery\\": "src/",
-            "Claver\\Facades\\": "src/Facades/",
             "Claver\\Traits\\": "src/Traits/"
         }
     },

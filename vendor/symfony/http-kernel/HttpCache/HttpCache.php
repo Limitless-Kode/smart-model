@@ -29,10 +29,9 @@ use Symfony\Component\HttpKernel\TerminableInterface;
  */
 class HttpCache implements HttpKernelInterface, TerminableInterface
 {
-    private HttpKernelInterface $kernel;
-    private StoreInterface $store;
+    public const BODY_EVAL_BOUNDARY_LENGTH = 24;
+
     private Request $request;
-    private ?SurrogateInterface $surrogate;
     private ?ResponseCacheStrategyInterface $surrogateCacheStrategy = null;
     private array $options = [];
     private array $traces = [];
@@ -81,17 +80,13 @@ class HttpCache implements HttpKernelInterface, TerminableInterface
      *                            the cache can serve a stale response when an error is encountered (default: 60).
      *                            This setting is overridden by the stale-if-error HTTP Cache-Control extension
      *                            (see RFC 5861).
-     *
-     *   * terminate_on_cache_hit Specifies if the kernel.terminate event should be dispatched even when the cache
-     *                            was hit (default: true).
-     *                            Unless your application needs to process events on cache hits, it is recommended
-     *                            to set this to false to avoid having to bootstrap the Symfony framework on a cache hit.
      */
-    public function __construct(HttpKernelInterface $kernel, StoreInterface $store, SurrogateInterface $surrogate = null, array $options = [])
-    {
-        $this->store = $store;
-        $this->kernel = $kernel;
-        $this->surrogate = $surrogate;
+    public function __construct(
+        private HttpKernelInterface $kernel,
+        private StoreInterface $store,
+        private ?SurrogateInterface $surrogate = null,
+        array $options = [],
+    ) {
 
         // needed in case there is a fatal error because the backend is too slow to respond
         register_shutdown_function($this->store->cleanup(...));
@@ -107,7 +102,6 @@ class HttpCache implements HttpKernelInterface, TerminableInterface
             'stale_if_error' => 60,
             'trace_level' => 'none',
             'trace_header' => 'X-Symfony-Cache',
-            'terminate_on_cache_hit' => true,
         ], $options);
 
         if (!isset($options['trace_level'])) {
@@ -235,22 +229,19 @@ class HttpCache implements HttpKernelInterface, TerminableInterface
 
         $response->prepare($request);
 
-        $response->isNotModified($request);
+        if (HttpKernelInterface::MAIN_REQUEST === $type) {
+            $response->isNotModified($request);
+        }
 
         return $response;
     }
 
-    /**
-     * @return void
-     */
-    public function terminate(Request $request, Response $response)
+    public function terminate(Request $request, Response $response): void
     {
         // Do not call any listeners in case of a cache hit.
         // This ensures identical behavior as if you had a separate
         // reverse caching proxy such as Varnish and the like.
-        if ($this->options['terminate_on_cache_hit']) {
-            trigger_deprecation('symfony/http-kernel', '6.2', 'Setting "terminate_on_cache_hit" to "true" is deprecated and will be changed to "false" in Symfony 7.0.');
-        } elseif (\in_array('fresh', $this->traces[$this->getTraceKey($request)] ?? [], true)) {
+        if (\in_array('fresh', $this->traces[$this->getTraceKey($request)] ?? [], true)) {
             return;
         }
 
@@ -399,7 +390,7 @@ class HttpCache implements HttpKernelInterface, TerminableInterface
 
             // return the response and not the cache entry if the response is valid but not cached
             $etag = $response->getEtag();
-            if ($etag && \in_array($etag, $requestEtags) && !\in_array($etag, $cachedEtags)) {
+            if ($etag && \in_array($etag, $requestEtags, true) && !\in_array($etag, $cachedEtags, true)) {
                 return $response;
             }
 
@@ -460,10 +451,8 @@ class HttpCache implements HttpKernelInterface, TerminableInterface
      *
      * @param bool          $catch Whether to catch exceptions or not
      * @param Response|null $entry A Response instance (the stale entry if present, null otherwise)
-     *
-     * @return Response
      */
-    protected function forward(Request $request, bool $catch = false, Response $entry = null)
+    protected function forward(Request $request, bool $catch = false, ?Response $entry = null): Response
     {
         $this->surrogate?->addSurrogateCapability($request);
 
@@ -593,11 +582,9 @@ class HttpCache implements HttpKernelInterface, TerminableInterface
     /**
      * Writes the Response to the cache.
      *
-     * @return void
-     *
      * @throws \Exception
      */
-    protected function store(Request $request, Response $response)
+    protected function store(Request $request, Response $response): void
     {
         try {
             $restoreHeaders = [];
@@ -636,12 +623,22 @@ class HttpCache implements HttpKernelInterface, TerminableInterface
     private function restoreResponseBody(Request $request, Response $response): void
     {
         if ($response->headers->has('X-Body-Eval')) {
+            \assert(self::BODY_EVAL_BOUNDARY_LENGTH === 24);
+
             ob_start();
 
-            if ($response->headers->has('X-Body-File')) {
-                include $response->headers->get('X-Body-File');
-            } else {
-                eval('; ?>'.$response->getContent().'<?php ;');
+            $content = $response->getContent();
+            $boundary = substr($content, 0, 24);
+            $j = strpos($content, $boundary, 24);
+            echo substr($content, 24, $j - 24);
+            $i = $j + 24;
+
+            while (false !== $j = strpos($content, $boundary, $i)) {
+                [$uri, $alt, $ignoreErrors, $part] = explode("\n", substr($content, $i, $j - $i), 4);
+                $i = $j + 24;
+
+                echo $this->surrogate->handle($this, $uri, $alt, $ignoreErrors);
+                echo $part;
             }
 
             $response->setContent(ob_get_clean());
@@ -662,10 +659,7 @@ class HttpCache implements HttpKernelInterface, TerminableInterface
         $response->headers->remove('X-Body-File');
     }
 
-    /**
-     * @return void
-     */
-    protected function processResponseBody(Request $request, Response $response)
+    protected function processResponseBody(Request $request, Response $response): void
     {
         if ($this->surrogate?->needsParsing($response)) {
             $this->surrogate->process($request, $response);

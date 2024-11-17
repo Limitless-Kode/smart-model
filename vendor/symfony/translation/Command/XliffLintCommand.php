@@ -41,7 +41,7 @@ class XliffLintCommand extends Command
     private ?\Closure $isReadableProvider;
     private bool $requireStrictFileNames;
 
-    public function __construct(string $name = null, callable $directoryIteratorProvider = null, callable $isReadableProvider = null, bool $requireStrictFileNames = true)
+    public function __construct(?string $name = null, ?callable $directoryIteratorProvider = null, ?callable $isReadableProvider = null, bool $requireStrictFileNames = true)
     {
         parent::__construct($name);
 
@@ -50,14 +50,11 @@ class XliffLintCommand extends Command
         $this->requireStrictFileNames = $requireStrictFileNames;
     }
 
-    /**
-     * @return void
-     */
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->addArgument('filename', InputArgument::IS_ARRAY, 'A file, a directory or "-" for reading from STDIN')
-            ->addOption('format', null, InputOption::VALUE_REQUIRED, 'The output format')
+            ->addOption('format', null, InputOption::VALUE_REQUIRED, sprintf('The output format ("%s")', implode('", "', $this->getAvailableFormatOptions())))
             ->setHelp(<<<EOF
 The <info>%command.name%</info> command lints an XLIFF file and outputs to STDOUT
 the first encountered syntax error.
@@ -109,7 +106,7 @@ EOF
         return $this->display($io, $filesInfo);
     }
 
-    private function validate(string $content, string $file = null): array
+    private function validate(string $content, ?string $file = null): array
     {
         $errors = [];
 
@@ -154,13 +151,13 @@ EOF
         return ['file' => $file, 'valid' => 0 === \count($errors), 'messages' => $errors];
     }
 
-    private function display(SymfonyStyle $io, array $files)
+    private function display(SymfonyStyle $io, array $files): int
     {
         return match ($this->format) {
             'txt' => $this->displayTxt($io, $files),
             'json' => $this->displayJson($io, $files),
             'github' => $this->displayTxt($io, $files, true),
-            default => throw new InvalidArgumentException(sprintf('The format "%s" is not supported.', $this->format)),
+            default => throw new InvalidArgumentException(sprintf('Supported formats are "%s".', implode('", "', $this->getAvailableFormatOptions()))),
         };
     }
 
@@ -196,7 +193,7 @@ EOF
         return min($erroredFiles, 1);
     }
 
-    private function displayJson(SymfonyStyle $io, array $filesInfo)
+    private function displayJson(SymfonyStyle $io, array $filesInfo): int
     {
         $errors = 0;
 
@@ -212,6 +209,9 @@ EOF
         return min($errors, 1);
     }
 
+    /**
+     * @return iterable<\SplFileInfo>
+     */
     private function getFiles(string $fileOrDirectory): iterable
     {
         if (is_file($fileOrDirectory)) {
@@ -229,7 +229,10 @@ EOF
         }
     }
 
-    private function getDirectoryIterator(string $directory)
+    /**
+     * @return iterable<\SplFileInfo>
+     */
+    private function getDirectoryIterator(string $directory): iterable
     {
         $default = fn ($directory) => new \RecursiveIteratorIterator(
             new \RecursiveDirectoryIterator($directory, \FilesystemIterator::SKIP_DOTS | \FilesystemIterator::FOLLOW_SYMLINKS),
@@ -243,7 +246,7 @@ EOF
         return $default($directory);
     }
 
-    private function isReadable(string $fileOrDirectory)
+    private function isReadable(string $fileOrDirectory): bool
     {
         $default = fn ($fileOrDirectory) => is_readable($fileOrDirectory);
 
@@ -268,7 +271,12 @@ EOF
     public function complete(CompletionInput $input, CompletionSuggestions $suggestions): void
     {
         if ($input->mustSuggestOptionValuesFor('format')) {
-            $suggestions->suggestValues(['txt', 'json', 'github']);
+            $suggestions->suggestValues($this->getAvailableFormatOptions());
         }
+    }
+
+    private function getAvailableFormatOptions(): array
+    {
+        return ['txt', 'json', 'github'];
     }
 }

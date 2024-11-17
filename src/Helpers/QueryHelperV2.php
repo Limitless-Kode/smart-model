@@ -7,7 +7,14 @@ use Spatie\QueryBuilder\QueryBuilder;
 
 class QueryHelperV2{
 
-    public static function queryBuilder($class): Model|QueryBuilder|null
+    /**
+     * Create a new QueryBuilder instance for the specified model or class name.
+     *
+     * @param string|Model $class The model class name as a string or an existing model instance.
+     *
+     * @return Model|QueryBuilder|null The created QueryBuilder instance or null if the class is invalid.
+     */
+    public static function queryBuilder(Model|string $class): Model|QueryBuilder|null
     {
         $model = false;
         if(gettype($class) === 'string'){

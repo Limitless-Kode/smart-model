@@ -3,47 +3,44 @@
 namespace Spatie\QueryBuilder;
 
 use Illuminate\Support\Collection;
+use Spatie\QueryBuilder\Enums\FilterOperator;
 use Spatie\QueryBuilder\Filters\Filter;
 use Spatie\QueryBuilder\Filters\FiltersBeginsWithStrict;
 use Spatie\QueryBuilder\Filters\FiltersCallback;
+use Spatie\QueryBuilder\Filters\FiltersEndsWithStrict;
 use Spatie\QueryBuilder\Filters\FiltersExact;
+use Spatie\QueryBuilder\Filters\FiltersOperator;
 use Spatie\QueryBuilder\Filters\FiltersPartial;
 use Spatie\QueryBuilder\Filters\FiltersScope;
 use Spatie\QueryBuilder\Filters\FiltersTrashed;
 
 class AllowedFilter
 {
-    /** @var \Spatie\QueryBuilder\Filters\Filter */
-    protected $filterClass;
+    protected string $internalName;
 
-    /** @var string */
-    protected $name;
+    protected Collection $ignored;
 
-    /** @var string */
-    protected $internalName;
+    protected mixed $default;
 
-    /** @var \Illuminate\Support\Collection */
-    protected $ignored;
+    protected bool $hasDefault = false;
 
-    /** @var mixed */
-    protected $default;
+    protected bool $nullable = false;
 
-    public function __construct(string $name, Filter $filterClass, ?string $internalName = null)
-    {
-        $this->name = $name;
-
-        $this->filterClass = $filterClass;
-
+    public function __construct(
+        protected string $name,
+        protected Filter $filterClass,
+        ?string $internalName = null
+    ) {
         $this->ignored = Collection::make();
 
         $this->internalName = $internalName ?? $name;
     }
 
-    public function filter(QueryBuilder $query, $value)
+    public function filter(QueryBuilder $query, $value): void
     {
         $valueToFilter = $this->resolveValueForFiltering($value);
 
-        if (is_null($valueToFilter)) {
+        if (! $this->nullable && is_null($valueToFilter)) {
             return;
         }
 
@@ -57,51 +54,70 @@ class AllowedFilter
         }
     }
 
-    public static function exact(string $name, ?string $internalName = null, bool $addRelationConstraint = true, string $arrayValueDelimiter = null): self
+    public static function exact(string $name, ?string $internalName = null, bool $addRelationConstraint = true, string $arrayValueDelimiter = null): static
     {
         static::setFilterArrayValueDelimiter($arrayValueDelimiter);
 
         return new static($name, new FiltersExact($addRelationConstraint), $internalName);
     }
 
-    public static function partial(string $name, $internalName = null, bool $addRelationConstraint = true, string $arrayValueDelimiter = null): self
+    public static function partial(string $name, $internalName = null, bool $addRelationConstraint = true, string $arrayValueDelimiter = null): static
     {
         static::setFilterArrayValueDelimiter($arrayValueDelimiter);
 
         return new static($name, new FiltersPartial($addRelationConstraint), $internalName);
     }
 
-    public static function beginsWithStrict(string $name, $internalName = null, bool $addRelationConstraint = true, string $arrayValueDelimiter = null): self
+    public static function beginsWithStrict(string $name, $internalName = null, bool $addRelationConstraint = true, string $arrayValueDelimiter = null): static
     {
         static::setFilterArrayValueDelimiter($arrayValueDelimiter);
 
         return new static($name, new FiltersBeginsWithStrict($addRelationConstraint), $internalName);
     }
 
-    public static function scope(string $name, $internalName = null, string $arrayValueDelimiter = null): self
+    public static function endsWithStrict(string $name, $internalName = null, bool $addRelationConstraint = true, string $arrayValueDelimiter = null): static
+    {
+        static::setFilterArrayValueDelimiter($arrayValueDelimiter);
+
+        return new static($name, new FiltersEndsWithStrict($addRelationConstraint), $internalName);
+    }
+
+    public static function scope(string $name, $internalName = null, string $arrayValueDelimiter = null): static
     {
         static::setFilterArrayValueDelimiter($arrayValueDelimiter);
 
         return new static($name, new FiltersScope(), $internalName);
     }
 
-    public static function callback(string $name, $callback, $internalName = null, string $arrayValueDelimiter = null): self
+    public static function callback(string $name, $callback, $internalName = null, string $arrayValueDelimiter = null): static
     {
         static::setFilterArrayValueDelimiter($arrayValueDelimiter);
 
         return new static($name, new FiltersCallback($callback), $internalName);
     }
 
-    public static function trashed(string $name = 'trashed', $internalName = null): self
+    public static function trashed(string $name = 'trashed', $internalName = null): static
     {
         return new static($name, new FiltersTrashed(), $internalName);
     }
 
-    public static function custom(string $name, Filter $filterClass, $internalName = null, string $arrayValueDelimiter = null): self
+    public static function custom(string $name, Filter $filterClass, $internalName = null, string $arrayValueDelimiter = null): static
     {
         static::setFilterArrayValueDelimiter($arrayValueDelimiter);
 
         return new static($name, $filterClass, $internalName);
+    }
+
+    public static function operator(string $name, FilterOperator $filterOperator, string $boolean = 'and', ?string $internalName = null, bool $addRelationConstraint = true, string $arrayValueDelimiter = null): self
+    {
+        static::setFilterArrayValueDelimiter($arrayValueDelimiter);
+
+        return new static($name, new FiltersOperator($addRelationConstraint, $filterOperator, $boolean), $internalName, $filterOperator);
+    }
+
+    public function getFilterClass(): Filter
+    {
+        return $this->filterClass;
     }
 
     public function getName(): string
@@ -114,7 +130,7 @@ class AllowedFilter
         return $this->name === $filterName;
     }
 
-    public function ignore(...$values): self
+    public function ignore(...$values): static
     {
         $this->ignored = $this->ignored
             ->merge($values)
@@ -133,9 +149,14 @@ class AllowedFilter
         return $this->internalName;
     }
 
-    public function default($value): self
+    public function default($value): static
     {
+        $this->hasDefault = true;
         $this->default = $value;
+
+        if (is_null($value)) {
+            $this->nullable(true);
+        }
 
         return $this;
     }
@@ -147,7 +168,22 @@ class AllowedFilter
 
     public function hasDefault(): bool
     {
-        return isset($this->default);
+        return $this->hasDefault;
+    }
+
+    public function nullable(bool $nullable = true): static
+    {
+        $this->nullable = $nullable;
+
+        return $this;
+    }
+
+    public function unsetDefault(): static
+    {
+        $this->hasDefault = false;
+        unset($this->default);
+
+        return $this;
     }
 
     protected function resolveValueForFiltering($value)
