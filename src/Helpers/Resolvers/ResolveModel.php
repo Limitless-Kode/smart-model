@@ -11,20 +11,6 @@ class ResolveModel
      *
      * @return Model The resolved model instance.
      */
-//    public static function resolve(Model|string $model) : Model
-//    {
-//        if(gettype($model) === 'string') {
-//            $model = "App\Models\\".ucfirst($model);
-//            $model = new $model;
-//            return $model->getModel();
-//        }
-//        $model = get_class($model);
-//        $model = explode('\\', $model);
-//        $model = end($model);
-//        $model = 'App\Models\\' . $model;
-//        return new $model;
-//    }
-
     public function __invoke(Model|string $model): Model
     {
         if(gettype($model) === 'string') {
